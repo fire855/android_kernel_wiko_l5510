@@ -1,0 +1,320 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "msm8916-qrd.dtsi"
+//<Begin><FFBAKK-105><20141202>modify LCD name for L9010;xiongdajun
+#include "dsi-panel-ea8061v-720p-video.dtsi"
+//<END><FFBAKK-105><20141202>modify LCD name for L9010;xiongdajun
+#include "dsi-panel-otm1284a-720p-video-TM.dtsi"
+#include "msm8916-camera-sensor-qrd-skui.dtsi"
+
+&soc {
+	flash_ocp8110:flashlight {
+		compatible = "qcom,leds-gpio-flash";
+		status = "disabled";
+		pinctrl-names = "ocp8110_default";
+		pinctrl-0 = <&ocp8110_default>;
+		qcom,flash-en = <&msm_gpio 31 0>;
+		qcom,flash-now = <&msm_gpio 32 0>;
+		linux,name = "flashlight";
+		linux,default-trigger = "flashlight-trigger";
+	};
+
+	/*gpio-leds {
+		compatible = "gpio-leds";
+		status = "okay";
+		pinctrl-names = "default";
+		pinctrl-0 = <&button_backlight_off>;
+
+		keypad-backlight {
+			gpios = <&msm_gpio 119 0>;
+			label = "button-backlight";
+			linux,default-trigger = "none";
+		};
+	};*/
+
+	sound {//<BEGIN><FFBAKK-105><2014.12.15>modify for tfa9890-pa;yangliang
+		compatible = "qcom,msm8x16-audio-codec";
+		qcom,model = "msm8x16-skui-snd-card";
+		qcom,msm-snd-card-id = <0>;
+		qcom,msm-ext-pa = "quaternary";
+		qcom,msm-codec-type = "internal";
+		qcom,msm-mbhc-hphl-swh = <1>;
+		qcom,msm-mbhc-gnd-swh = <0>;
+		//2014/11/18 tyj. added msm-micbias1-ext-cap to indicate ext cap is used for l5510.
+		qcom,msm-micbias1-ext-cap;
+		qcom,msm-mclk-freq = <12288000>;
+		qcom,msm-hs-micbias-type = "internal";
+		qcom,audio-routing =
+			"RX_BIAS", "MCLK",
+			"SPK_RX_BIAS", "MCLK",
+			"INT_LDO_H", "MCLK",
+			"MIC BIAS External", "Handset Mic",
+			"MIC BIAS Internal2", "Headset Mic",
+			"MIC BIAS Internal1", "Secondary Mic",
+			"AMIC1", "MIC BIAS External",
+			"AMIC2", "MIC BIAS Internal2",
+			"AMIC3", "MIC BIAS Internal1";
+		pinctrl-names = "cdc_lines_act",
+				"cdc_lines_sus",
+				"cdc_lines_sec_ext_act",
+				"cdc_lines_sec_ext_sus",
+				"cdc_lines_quat_ext_act",
+				"cdc_lines_quat_ext_sus";
+
+		//qcom,ext-spk-amp-gpio = <&msm_gpio 16 0>;
+
+		pinctrl-0 = <&cdc_pdm_lines_act>;
+		pinctrl-1 = <&cdc_pdm_lines_sus>;
+		pinctrl-2 = <&cdc_pdm_lines_act &cdc_ext_pa_act
+						&cdc_ext_pa_ws_act>;
+		pinctrl-3 = <&cdc_pdm_lines_sus &cdc_ext_pa_sus
+						&cdc_ext_pa_ws_sus>;
+		pinctrl-4 = <&cdc_pdm_lines_act &ext_cdc_tlmm_lines_act>;
+		pinctrl-5 = <&cdc_pdm_lines_sus &ext_cdc_tlmm_lines_sus>;
+	};
+};
+
+&pm8916_mpps {
+	mpp@a300 { /* MPP 4 */
+		/* Backlight PWM */
+		qcom,mode = <1>;		/* Digital output */
+		qcom,invert = <0>;		/* Disable Invert */
+		qcom,src-sel = <4>;		/* DTEST1 */
+		//qcom,vin-sel = <0>;		/* VPH_PWR */
+		qcom,vin-sel = <3>;		/* VIN3 1.9V */
+		qcom,master-en = <1>;		/* Enable MPP */
+	};
+};
+
+&mdss_mdp {
+	qcom,mdss-pref-prim-intf = "dsi";
+};
+
+&pmx_mdss {
+	qcom,num-grp-pins = <1>;
+	qcom,pins = <&gp 25>;
+};
+
+&mdss_dsi0 {
+	//<Begin><FFBAKK-105><20141202>modify LCD name for L9010;xiongdajun
+	qcom,dsi-pref-prim-pan = <&dsi_ea8061v_720p_video>;
+	//<END><FFBAKK-105><20141202>modify LCD name for L9010;xiongdajun
+	pinctrl-names = "mdss_default", "mdss_sleep";
+	pinctrl-0 = <&mdss_dsi_active>;
+	pinctrl-1 = <&mdss_dsi_suspend>;
+
+	qcom,platform-reset-gpio = <&msm_gpio 25 0>;
+};
+
+&dsi_ea8061v_720p_video {			//<Line><FFBAKK-105><20141202>modify LCD name for L9010;xiongdajun
+       qcom,cont-splash-enabled;
+};
+&dsi_otm1284a_720p_video_tm {
+       qcom,cont-splash-enabled;
+};
+
+&tlmm_pinmux {
+	ocp8110_pins {
+		//qcom,pins = <&gp 31>, <&gp 32>;
+		qcom,pins = <&gp 36>, <&gp 32>;  //add by YangRujin for gp_clk control bl.
+		qcom,num-grp-pins = <2>;
+		qcom,pin-func = <0>;
+		label = "ocp8110_pins";
+		ocp8110_default: en_default {
+			  drive-strength = <2>;
+			  bias-pull-down;
+		};
+	};
+
+	ltr553_int_pin {
+		qcom,pins = <&gp 115>;	//xiongdajun modify gpio 20141205
+		qcom,pin-func = <0>;
+		qcom,num-grp-pins = <1>;
+		label = "ltr553-irq";
+		ltr553_default: ltr553_default {
+			drive-strength = <6>;
+			bias-pull-up;
+		};
+		ltr553_sleep: ltr553_sleep {
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	bma2x2_int1_pin {
+		qcom,pins = <&gp 113>;	//xiongdajun modify gpio 20141205
+		qcom,num-grp-pins = <1>;
+		label = "bma2x2_int1_pin";
+		bma2x2_int1_default: int1_default {
+			  drive-strength = <6>;
+			  bias-pull-up;
+		};
+	};
+
+	bma2x2_int2_pin {
+		qcom,pins = <&gp 108>;	//xiongdajun modify gpio 20141205
+		qcom,num-grp-pins = <1>;
+		label = "bma2x2_int2_pin";
+		bma2x2_int2_default: int2_default {
+			  drive-strength = <6>;
+			  bias-pull-up;
+		};
+	};
+        akm_reset_pin {
+            qcom,pins = <&gp 121>;	//xiongdajun modify gpio 20141205
+            qcom,pin-func = <0>;
+            qcom,num-grp-pins = <1>;
+            label = "akm_reset_pin";
+            akm_default: akm_default {
+                 drive-strength = <6>;
+                 bias-pull-up;
+            };  
+            akm_sleep: akm_sleep {
+               drive-strength = <2>;
+               bias-pull-down;
+           };  
+        };         
+};
+
+&i2c_0 { /* BLSP1 QUP2 */
+/*
+	avago@39 {
+		compatible = "avago,apds9930";
+		reg = <0x39>;
+		pinctrl-names = "default","sleep";
+		pinctrl-0 = <&apds99xx_default>;
+		pinctrl-1 = <&apds99xx_sleep>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <113 0x2002>;
+		vdd-supply = <&pm8916_l17>;
+		vio-supply = <&pm8916_l6>;
+		avago,irq-gpio = <&msm_gpio 113 0x2002>;
+		avago,ps-threshold = <600>;
+		avago,ps-hysteresis-threshold = <500>;
+		avago,ps-pulse = <8>;
+		avago,ps-pgain = <0>;
+		avago,als-B = <186>;
+		avago,als-C = <75>;
+		avago,als-D = <129>;
+		avago,ga-value = <768>;
+	};
+*/
+	liteon@23 {
+		compatible = "liteon,ltr553";
+		reg = <0x23>;
+		pinctrl-names = "default","sleep";
+		pinctrl-0 = <&ltr553_default>;
+		pinctrl-1 = <&ltr553_sleep>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <115 0x2>;		//xiongdajun modify gpio 20141205
+		vdd-supply = <&pm8916_l17>;
+		vio-supply = <&pm8916_l6>;
+		liteon,intr = <&msm_gpio 115 0x2>;	//xiongdajun modify gpio 20141205
+		liteon,highthr = <500>;
+		liteon,lowthr = <400>;
+		//LINE<JIRA_ID><DATE20141127><add ps cali data in dts>zenghaihui
+		tinno,base_value = <0x0a>;
+		tinno,threshold_high_offset = <0x60>;
+		tinno,threshold_low_offset = <0x5A>;
+	};
+
+	bosch@18 { /* Accelerometer sensor */
+		compatible = "bosch,bma2x2";
+		reg = <0x18>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bma2x2_int1_default &bma2x2_int2_default>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <112 0x2002>;
+		vdd-supply = <&pm8916_l17>;
+		vio-supply = <&pm8916_l6>;
+		bosch,init-interval = <200>;
+		bosch,place = <3>;
+		bosch,gpio-int1 = <&msm_gpio 113 0x2002>;		//xiongdajun modify gpio 20141205
+		bosch,gpio-int2 = <&msm_gpio 108 0x2002>;		//xiongdajun modify gpio 20141205
+	};
+        /*
+	mpu6050@68 {
+		compatible = "invn,mpu6050";
+		reg = <0x68>;
+		pinctrl-names = "mpu_default","mpu_sleep";
+		pinctrl-0 = <&mpu6050_default>;
+		pinctrl-1 = <&mpu6050_sleep>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <115 0x2>;
+		vdd-supply = <&pm8916_l17>;
+		vlogic-supply = <&pm8916_l16>;
+		vi2c-supply = <&pm8916_l6>;
+		invn,gpio-int = <&msm_gpio 115 0x2>;
+		invn,place = "Portrait Up Back Side";
+                invn,accel_poll_ms = <200>;
+                invn,gyro_poll_ms = <200>; 
+	};
+        *//*xiongdajun del 20141205
+        mpu6880@68{
+            compatible = "invn,mpu6880";
+            reg = <0x68>;
+            interrupt-parent = <&msm_gpio>;
+            interrupts = <115 0x2>;
+            vdd-supply = <&pm8916_l17>;
+            vio-supply = <&pm8916_l6>;
+            invn,gpio-int = <&msm_gpio 115 0x2>;
+            invn,gyro_poll_ms = <200>;
+            invn,accel_poll_ms = <200>;
+            invn,place = "Portrait Down Back Side";
+        }; */
+
+        akm@c {
+            compatible = "ak,ak09911";
+            reg = <0x0c>;
+            pinctrl-names = "default","sleep";
+            pinctrl-0 = <&akm_default>;
+            pinctrl-1 = <&akm_sleep>;
+            vdd-supply = <&pm8916_l17>;
+            vio-supply = <&pm8916_l6>;
+            akm,layout = <0x3>;
+            akm,poll_interval = <200>;
+            akm,gpio_rstn = <&msm_gpio 121 0x0>;	//xiongdajun modify gpio 20141205
+            akm,auto-report;
+        }; 
+
+	/*memsic@30 { // Magnetic field sensor  //wangyanhui delete 20141120
+		compatible = "memsic,mmc3416x";
+		reg = <0x30>;
+		vdd-supply = <&pm8916_l17>;
+		vio-supply = <&pm8916_l6>;
+		memsic,dir = "obverse-x-axis-forward";
+		memsic,auto-report;
+	};*/
+
+	ktd@30 { // ktd2026 field sensor //wangyanhui add 20141120
+		compatible = "ktd,ktd2026";
+		reg = <0x30>;
+	};
+};
+
+&sdc2_cd_off {
+	/delete-property/ bias-disable;
+	bias-pull-down;
+};
+&sdhc_2 {/*tinno modify 0910*/
+	//qcom,nonremovable;
+	interrupts = <0 1 2>;
+	interrupt-map = <0 &intc 0 125 0
+		1 &intc 0 221 0
+		2 &msm_gpio 38 0>;
+	interrupt-names = "hc_irq", "pwr_irq", "status_irq";
+
+	cd-gpios = <&msm_gpio 38 0x1>;
+	///delete-property/ cd-gpios;
+};
+

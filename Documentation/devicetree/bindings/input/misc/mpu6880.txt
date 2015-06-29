@@ -1,0 +1,45 @@
+InvenSense MPU6880 6 Axis gyroscope+accelerometer combo driver
+
+Required properties:
+
+ - compatible		: Should be "invn,mpu6880".
+ - reg				: i2c slave address of the device.
+ - interrupt-parent	: Parent of interrupt.
+ - interrupts		: Gyrometer sample interrupt to indicate new data ready.
+ - vdd-supply		: Analog power supply needed to power device.
+ - vio-supply	: Digital IO power supply needed for IO and I2C.
+ - invn,gyro_poll_ms: The poll_interval of gyroscoper.
+ - invn,accel_poll_ms: The poll_interval of accelerometer.
+ - invn,place		: The placing of the accelerometer on board. There are 8
+				patterns of placing described as below:
+				"Portrait Up": Portrait Up
+				"Landscape Right": Landscape Right
+				"Portrait Down": Portrait Down
+				"Landscape Left": Landscape Left
+				"Portrait Up Back Side": Portrait Up (back side view)
+				"Landscape Right Back Side": Landscape Right (back side view)
+				"Portrait Down Back Side": Portrait Down (back side view)
+				"Landscape Left Back Side": Landscape Left (back side view)
+
+Optional properties:
+
+ - invn,use-interrupt	: use device interrupt to trigger data acquisition
+			instead of polling data.
+ - invn,gpio-int	: GPIO used for interrupt.
+ - invn,gpio-en		: GPIO used for power enabling.
+
+Example:
+	i2c@f9925000 {
+		mpu6880@68{
+			compatible = "invn,mpu6880";
+			reg = <0x68>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <115 0x2>;
+			vdd-supply = <&pm8916_l17>;
+			vio-supply = <&pm8916_l6>;
+			invn,gpio-int = <&msm_gpio 115 0x2>;
+			invn,gyro_poll_ms = <200>;
+			invn,accel_poll_ms = <200>;
+			invn,place = "Portrait Up Back Side";
+		};
+	};
